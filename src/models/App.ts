@@ -114,9 +114,9 @@ export default class App {
   }
 
   private getTopScoringRegions(values: Data[]) {
-    const topRegion = values.reduce((prev: Data, current: Data) => {
-      return prev.values[0] > current.values[0] ? prev : current;
-    });
+    const topRegion = values.reduce((prev: Data, current: Data) =>
+      prev.values[0] > current.values[0] ? prev : current
+    );
     // Return all regions with the same score
     return values.filter((v: Data) => v.values[0] === topRegion.values[0]);
   }
