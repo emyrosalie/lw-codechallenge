@@ -129,17 +129,15 @@ export default class App {
     for (const year of years) {
       const results = this.getResultsFromYear(response.data, year);
       // Skip year if no results
-      if (!results || results.length === 0) {
-        return;
+      if (results?.length > 0) {
+        const topRegions = this.getTopScoringRegions(results);
+        const regionNames = topRegions.map(
+          (r: Data) => this.findRegion(r.key[0], regions)?.name
+        );
+        const percent = topRegions[0].values[0];
+
+        console.log(year, regionNames.join(", "), `${percent}%`);
       }
-
-      const topRegions = this.getTopScoringRegions(results);
-      const regionNames = topRegions.map(
-        (r: Data) => this.findRegion(r.key[0], regions)?.name
-      );
-      const percent = topRegions[0].values[0];
-
-      console.log(year, regionNames.join(", "), `${percent}%`);
     }
   }
 }
