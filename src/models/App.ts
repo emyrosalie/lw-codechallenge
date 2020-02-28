@@ -1,9 +1,11 @@
 import axios from "axios";
 import { ME0104T4_GetResponse, GetVariables } from "../types/scb";
+import Region from "./Region";
 
 export default class App {
   private url: string;
   private years: string[];
+  private regions: Region[];
 
   constructor() {
     this.url =
@@ -26,6 +28,25 @@ export default class App {
     return data.variables.find((value: GetVariables) => value.code === code);
   }
 
+  private isAllowedRegion(value: string) {
+    return value !== "00";
+  }
+
+  private addRegions(regionData: GetVariables) {
+    const values = regionData.values;
+    const valueTexts = regionData.valueTexts;
+
+    for (let i = 0; i < values.length; i++) {
+      const name = valueTexts[i];
+      const value = values[i];
+
+      if (this.isAllowedRegion(value)) {
+        const region = new Region(name, value);
+        this.regions.push(region);
+      }
+    }
+  }
+
   private async fetchInitData() {
     const response = await axios.get(this.url);
     const data = response?.data;
@@ -39,6 +60,11 @@ export default class App {
     }
 
     this.years = yearData.values;
-    console.log(this.years);
+
+    const regionData = this.findVariableData(data, "Region");
+    if (!regionData) {
+      throw new Error("Region data could not be found");
+    }
+    this.addRegions(regionData);
   }
 }
