@@ -15,6 +15,9 @@ export default class App {
   async startApp() {
     try {
       await this.init();
+
+      const percentData = await this.fetchPercentData();
+      console.log(percentData);
     } catch (error) {
       console.error(error);
     }
@@ -28,6 +31,10 @@ export default class App {
 
   private findVariableData(data: ME0104T4_GetResponse, code: string) {
     return data.variables.find((value: GetVariables) => value.code === code);
+  }
+
+  private getValuesFromRegions(regions: Region[]) {
+    return regions.map(a => a.value);
   }
 
   private isAllowedRegion(value: string) {
@@ -68,5 +75,36 @@ export default class App {
       throw new Error("Region data could not be found");
     }
     this.addRegions(regionData);
+  }
+
+  private async fetchPercentData() {
+    const regionValues = this.getValuesFromRegions(this.regions);
+    const response = await axios.post(this.url, {
+      query: [
+        {
+          code: "Region",
+          selection: {
+            filter: "vs:RegionKommun07+BaraEjAggr",
+            values: regionValues
+          }
+        },
+        {
+          code: "ContentsCode",
+          selection: {
+            filter: "item",
+            values: ["ME0104B8"]
+          }
+        }
+      ],
+      response: {
+        format: "json"
+      }
+    });
+    const data = response?.data;
+    if (!data) {
+      throw new Error("Response data could not be found");
+    }
+
+    return JSON.parse(data.trim());
   }
 }
