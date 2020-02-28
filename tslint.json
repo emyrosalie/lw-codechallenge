@@ -1,0 +1,13 @@
+{
+  "defaultSeverity": "error",
+  "extends": ["tslint:latest", "tslint-config-prettier"],
+  "rules": {
+    "no-console": false
+  },
+  "linterOptions": {
+    "exclude": [
+      "*.json",
+      "**/*.json"
+    ]
+  }
+}
