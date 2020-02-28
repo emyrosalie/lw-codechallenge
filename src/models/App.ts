@@ -9,8 +9,6 @@ import Region from "./Region";
 
 export default class App {
   private url: string;
-  private years: string[];
-  private regions: Region[];
 
   constructor() {
     this.url =
@@ -19,19 +17,12 @@ export default class App {
 
   async startApp() {
     try {
-      await this.init();
-
-      const percentData = await this.fetchPercentData();
-      this.printResult(percentData);
+      const initData = await this.fetchInitData();
+      const percentData = await this.fetchPercentData(initData.regions);
+      this.printResult(percentData, initData.years, initData.regions);
     } catch (error) {
       console.error(error);
     }
-  }
-
-  private async init() {
-    this.years = [];
-    this.regions = [];
-    await this.fetchInitData();
   }
 
   private findVariableData(data: ME0104T4_GetResponse, code: string) {
@@ -46,7 +37,7 @@ export default class App {
     return value !== "00";
   }
 
-  private addRegions(regionData: GetVariables) {
+  private getRegions(regionData: GetVariables) {
     const values = regionData.values;
     const valueTexts = regionData.valueTexts;
 
@@ -57,7 +48,7 @@ export default class App {
       this.isAllowedRegion(region.value)
     );
 
-    this.regions = allowedRegions;
+    return allowedRegions;
   }
 
   private async fetchInitData() {
@@ -72,17 +63,19 @@ export default class App {
       throw new Error("Year data could not be found");
     }
 
-    this.years = yearData.values;
+    const years = yearData.values;
 
     const regionData = this.findVariableData(data, "Region");
     if (!regionData) {
       throw new Error("Region data could not be found");
     }
-    this.addRegions(regionData);
+    const regions = this.getRegions(regionData);
+
+    return { years, regions };
   }
 
-  private async fetchPercentData() {
-    const regionValues = this.getValuesFromRegions(this.regions);
+  private async fetchPercentData(regions: Region[]) {
+    const regionValues = this.getValuesFromRegions(regions);
     const response = await axios.post(this.url, {
       query: [
         {
@@ -112,8 +105,8 @@ export default class App {
     return JSON.parse(data.trim());
   }
 
-  private findRegion(value: string) {
-    return this.regions.find(region => region.value === value);
+  private findRegion(value: string, regions: Region[]) {
+    return regions.find(region => region.value === value);
   }
 
   private getResultsFromYear(values: Data[], year: string) {
@@ -128,8 +121,12 @@ export default class App {
     return values.filter((v: Data) => v.values[0] === topRegion.values[0]);
   }
 
-  private printResult(response: ME0104T4_PostResponse) {
-    for (const year of this.years) {
+  private printResult(
+    response: ME0104T4_PostResponse,
+    years: string[],
+    regions: Region[]
+  ) {
+    for (const year of years) {
       const results = this.getResultsFromYear(response.data, year);
       // Skip year if no results
       if (!results || results.length === 0) {
@@ -138,7 +135,7 @@ export default class App {
 
       const topRegions = this.getTopScoringRegions(results);
       const regionNames = topRegions.map(
-        (r: Data) => this.findRegion(r.key[0])?.name
+        (r: Data) => this.findRegion(r.key[0], regions)?.name
       );
       const percent = topRegions[0].values[0];
 
