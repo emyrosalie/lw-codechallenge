@@ -1,5 +1,10 @@
 import axios from "axios";
-import { ME0104T4_GetResponse, GetVariables } from "../types/scb";
+import {
+  ME0104T4_GetResponse,
+  GetVariables,
+  ME0104T4_PostResponse,
+  Data
+} from "../types/scb";
 import Region from "./Region";
 
 export default class App {
@@ -17,7 +22,7 @@ export default class App {
       await this.init();
 
       const percentData = await this.fetchPercentData();
-      console.log(percentData);
+      this.printResult(percentData);
     } catch (error) {
       console.error(error);
     }
@@ -106,5 +111,21 @@ export default class App {
     }
 
     return JSON.parse(data.trim());
+  }
+
+  private getResultsFromYear(values: Data[], year: string) {
+    return values.filter((value: Data) => value.key[1] === year);
+  }
+
+  private printResult(response: ME0104T4_PostResponse) {
+    for (const year of this.years) {
+      const results = this.getResultsFromYear(response.data, year);
+      // Skip year if no results
+      if (!results || results.length === 0) {
+        return;
+      }
+
+      console.log(results);
+    }
   }
 }
