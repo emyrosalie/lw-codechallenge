@@ -113,6 +113,10 @@ export default class App {
     return JSON.parse(data.trim());
   }
 
+  private findRegion(value: string) {
+    return this.regions.find(region => region.value === value);
+  }
+
   private getResultsFromYear(values: Data[], year: string) {
     return values.filter((value: Data) => value.key[1] === year);
   }
@@ -134,7 +138,12 @@ export default class App {
       }
 
       const topRegions = this.getTopScoringRegions(results);
-      console.log(topRegions);
+      const regionNames = topRegions.map(
+        (r: Data) => this.findRegion(r.key[0])?.name
+      );
+      const percent = topRegions[0].values[0];
+
+      console.log(year, regionNames.join(", "), `${percent}%`);
     }
   }
 }
