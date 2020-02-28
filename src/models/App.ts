@@ -117,6 +117,14 @@ export default class App {
     return values.filter((value: Data) => value.key[1] === year);
   }
 
+  private getTopScoringRegions(values: Data[]) {
+    const topRegion = values.reduce((prev: Data, current: Data) => {
+      return prev.values[0] > current.values[0] ? prev : current;
+    });
+    // Return all regions with the same score
+    return values.filter((v: Data) => v.values[0] === topRegion.values[0]);
+  }
+
   private printResult(response: ME0104T4_PostResponse) {
     for (const year of this.years) {
       const results = this.getResultsFromYear(response.data, year);
@@ -125,7 +133,8 @@ export default class App {
         return;
       }
 
-      console.log(results);
+      const topRegions = this.getTopScoringRegions(results);
+      console.log(topRegions);
     }
   }
 }
