@@ -9,7 +9,11 @@ export default class App {
   }
 
   async startApp() {
-    await this.init();
+    try {
+      await this.init();
+    } catch (error) {
+      console.error(error);
+    }
   }
 
   private async init() {
