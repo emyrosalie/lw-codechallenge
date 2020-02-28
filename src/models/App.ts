@@ -21,6 +21,8 @@ export default class App {
   }
 
   private async init() {
+    this.years = [];
+    this.regions = [];
     await this.fetchInitData();
   }
 
