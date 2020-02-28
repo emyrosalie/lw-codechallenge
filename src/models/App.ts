@@ -50,15 +50,14 @@ export default class App {
     const values = regionData.values;
     const valueTexts = regionData.valueTexts;
 
-    for (let i = 0; i < values.length; i++) {
-      const name = valueTexts[i];
-      const value = values[i];
+    const regions = values.map(
+      (value, index) => new Region(valueTexts[index], value)
+    );
+    const allowedRegions = regions.filter(region =>
+      this.isAllowedRegion(region.value)
+    );
 
-      if (this.isAllowedRegion(value)) {
-        const region = new Region(name, value);
-        this.regions.push(region);
-      }
-    }
+    this.regions = allowedRegions;
   }
 
   private async fetchInitData() {
